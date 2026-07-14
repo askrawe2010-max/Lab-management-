@@ -27,3 +27,24 @@ function App() {
         <button style={tabStyle('terms')} onClick={() => setActiveTab('terms')}>
           الفصول
         </button>
+        <button style={tabStyle('sections')} onClick={() => setActiveTab('sections')}>
+          الشعب
+        </button>
+        <button style={tabStyle('experiments')} onClick={() => setActiveTab('experiments')}>
+          التجارب
+        </button>
+        <button style={tabStyle('chemicals')} onClick={() => setActiveTab('chemicals')}>
+          المواد الكيميائية
+        </button>
+      </div>
+
+      {activeTab === 'courses' && <CoursesPage />}
+      {activeTab === 'terms' && <TermsPage />}
+      {activeTab === 'sections' && <SectionsPage />}
+      {activeTab === 'experiments' && <ExperimentsPage />}
+      {activeTab === 'chemicals' && <ChemicalsPage />}
+    </div>
+  )
+}
+
+export default App
