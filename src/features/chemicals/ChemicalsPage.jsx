@@ -4,7 +4,11 @@ import { getExperiments } from '../experiments/experimentService'
 
 const PHYSICAL_STATES = ['Pure Solid', 'Pure Liquid', 'Solution']
 const CONCENTRATION_TYPES = ['mol/L', '%w/w', '%v/v', '%w/v', 'ppm']
-const SOURCE_TYPES = ['Solid dissolved', 'Liquid stock']
+const SOURCE_TYPES = [
+  { value: 'solid_dissolved', label: 'Solid dissolved (مادة صلبة تذاب)' },
+  { value: 'diluted_stock', label: 'Liquid stock - diluted (محلول مركز يتم تخفيفه)' },
+  { value: 'concentrated_stock', label: 'Liquid stock - concentrated, as-is (محلول مركز يستخدم كما هو)' },
+]
 
 function ChemicalsPage() {
   const [chemicals, setChemicals] = useState([])
@@ -23,6 +27,11 @@ function ChemicalsPage() {
   const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
 
+  const isSolution = physicalState === 'Solution'
+  const showMolarMass = isSolution && sourceType === 'solid_dissolved'
+  const showStockPercent = isSolution && sourceType === 'diluted_stock'
+  const showConcentrationType = isSolution && (sourceType === 'solid_dissolved' || sourceType === 'diluted_stock')
+
   async function loadData() {
     setLoading(true)
     try {
@@ -39,6 +48,24 @@ function ChemicalsPage() {
   useEffect(() => {
     loadData()
   }, [])
+
+  // لما تتغير الحالة الفيزيائية أو المصدر، نفضي الحقول يلي ما عادت منطقية
+  function handlePhysicalStateChange(value) {
+    setPhysicalState(value)
+    if (value !== 'Solution') {
+      setSourceType('')
+      setConcentrationType('')
+      setMolarMass('')
+      setStockPercent('')
+    }
+  }
+
+  function handleSourceTypeChange(value) {
+    setSourceType(value)
+    if (value !== 'solid_dissolved') setMolarMass('')
+    if (value !== 'diluted_stock') setStockPercent('')
+    if (value === 'concentrated_stock') setConcentrationType('')
+  }
 
   function resetForm() {
     setExperimentId('')
@@ -67,10 +94,10 @@ function ChemicalsPage() {
       physical_state: physicalState,
       amount: amount ? Number(amount) : null,
       unit,
-      concentration_type: concentrationType || null,
-      source_type: sourceType || null,
-      molar_mass: molarMass ? Number(molarMass) : null,
-      stock_percent: stockPercent ? Number(stockPercent) : null,
+      concentration_type: showConcentrationType ? concentrationType || null : null,
+      source_type: isSolution ? sourceType || null : null,
+      molar_mass: showMolarMass && molarMass ? Number(molarMass) : null,
+      stock_percent: showStockPercent && stockPercent ? Number(stockPercent) : null,
       notes,
     }
     try {
@@ -135,7 +162,7 @@ function ChemicalsPage() {
           onChange={(e) => setName(e.target.value)}
           style={{ padding: '0.5rem', flex: '1 1 150px' }}
         />
-        <select value={physicalState} onChange={(e) => setPhysicalState(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 140px' }}>
+        <select value={physicalState} onChange={(e) => handlePhysicalStateChange(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 140px' }}>
           {PHYSICAL_STATES.map((s) => (
             <option key={s} value={s}>{s}</option>
           ))}
@@ -154,32 +181,45 @@ function ChemicalsPage() {
           onChange={(e) => setUnit(e.target.value)}
           style={{ padding: '0.5rem', flex: '1 1 100px' }}
         />
-        <select value={concentrationType} onChange={(e) => setConcentrationType(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 130px' }}>
-          <option value="">نوع التركيز (اختياري)</option>
-          {CONCENTRATION_TYPES.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <select value={sourceType} onChange={(e) => setSourceType(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 150px' }}>
-          <option value="">مصدر المحلول (اختياري)</option>
-          {SOURCE_TYPES.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-        <input
-          type="number"
-          placeholder="الوزن الجزيئي (اختياري)"
-          value={molarMass}
-          onChange={(e) => setMolarMass(e.target.value)}
-          style={{ padding: '0.5rem', flex: '1 1 150px' }}
-        />
-        <input
-          type="number"
-          placeholder="نسبة المخزون % (اختياري)"
-          value={stockPercent}
-          onChange={(e) => setStockPercent(e.target.value)}
-          style={{ padding: '0.5rem', flex: '1 1 150px' }}
-        />
+
+        {isSolution && (
+          <select value={sourceType} onChange={(e) => handleSourceTypeChange(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 260px' }}>
+            <option value="">اختر مصدر المحلول</option>
+            {SOURCE_TYPES.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+        )}
+
+        {showConcentrationType && (
+          <select value={concentrationType} onChange={(e) => setConcentrationType(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 130px' }}>
+            <option value="">نوع التركيز</option>
+            {CONCENTRATION_TYPES.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        )}
+
+        {showMolarMass && (
+          <input
+            type="number"
+            placeholder="الوزن الجزيئي (g/mol)"
+            value={molarMass}
+            onChange={(e) => setMolarMass(e.target.value)}
+            style={{ padding: '0.5rem', flex: '1 1 150px' }}
+          />
+        )}
+
+        {showStockPercent && (
+          <input
+            type="number"
+            placeholder="نسبة المخزون %"
+            value={stockPercent}
+            onChange={(e) => setStockPercent(e.target.value)}
+            style={{ padding: '0.5rem', flex: '1 1 150px' }}
+          />
+        )}
+
         <input
           type="text"
           placeholder="ملاحظات (اختياري)"
