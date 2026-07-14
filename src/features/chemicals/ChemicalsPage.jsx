@@ -20,6 +20,7 @@ function ChemicalsPage() {
   const [amount, setAmount] = useState('')
   const [unit, setUnit] = useState('')
   const [concentrationType, setConcentrationType] = useState('')
+  const [targetConcentrationValue, setTargetConcentrationValue] = useState('')
   const [sourceType, setSourceType] = useState('')
   const [molarMass, setMolarMass] = useState('')
   const [stockPercent, setStockPercent] = useState('')
@@ -30,7 +31,7 @@ function ChemicalsPage() {
   const isSolution = physicalState === 'Solution'
   const showMolarMass = isSolution && sourceType === 'solid_dissolved'
   const showStockPercent = isSolution && sourceType === 'diluted_stock'
-  const showConcentrationType = isSolution && (sourceType === 'solid_dissolved' || sourceType === 'diluted_stock')
+  const showConcentrationFields = isSolution && (sourceType === 'solid_dissolved' || sourceType === 'diluted_stock')
 
   async function loadData() {
     setLoading(true)
@@ -49,12 +50,12 @@ function ChemicalsPage() {
     loadData()
   }, [])
 
-  // لما تتغير الحالة الفيزيائية أو المصدر، نفضي الحقول يلي ما عادت منطقية
   function handlePhysicalStateChange(value) {
     setPhysicalState(value)
     if (value !== 'Solution') {
       setSourceType('')
       setConcentrationType('')
+      setTargetConcentrationValue('')
       setMolarMass('')
       setStockPercent('')
     }
@@ -64,7 +65,10 @@ function ChemicalsPage() {
     setSourceType(value)
     if (value !== 'solid_dissolved') setMolarMass('')
     if (value !== 'diluted_stock') setStockPercent('')
-    if (value === 'concentrated_stock') setConcentrationType('')
+    if (value === 'concentrated_stock') {
+      setConcentrationType('')
+      setTargetConcentrationValue('')
+    }
   }
 
   function resetForm() {
@@ -74,6 +78,7 @@ function ChemicalsPage() {
     setAmount('')
     setUnit('')
     setConcentrationType('')
+    setTargetConcentrationValue('')
     setSourceType('')
     setMolarMass('')
     setStockPercent('')
@@ -94,7 +99,8 @@ function ChemicalsPage() {
       physical_state: physicalState,
       amount: amount ? Number(amount) : null,
       unit,
-      concentration_type: showConcentrationType ? concentrationType || null : null,
+      concentration_type: showConcentrationFields ? concentrationType || null : null,
+      target_concentration_value: showConcentrationFields && targetConcentrationValue ? Number(targetConcentrationValue) : null,
       source_type: isSolution ? sourceType || null : null,
       molar_mass: showMolarMass && molarMass ? Number(molarMass) : null,
       stock_percent: showStockPercent && stockPercent ? Number(stockPercent) : null,
@@ -122,6 +128,7 @@ function ChemicalsPage() {
     setAmount(chemical.amount ?? '')
     setUnit(chemical.unit || '')
     setConcentrationType(chemical.concentration_type || '')
+    setTargetConcentrationValue(chemical.target_concentration_value ?? '')
     setSourceType(chemical.source_type || '')
     setMolarMass(chemical.molar_mass ?? '')
     setStockPercent(chemical.stock_percent ?? '')
@@ -191,13 +198,22 @@ function ChemicalsPage() {
           </select>
         )}
 
-        {showConcentrationType && (
-          <select value={concentrationType} onChange={(e) => setConcentrationType(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 130px' }}>
-            <option value="">نوع التركيز</option>
-            {CONCENTRATION_TYPES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+        {showConcentrationFields && (
+          <>
+            <select value={concentrationType} onChange={(e) => setConcentrationType(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 120px' }}>
+              <option value="">وحدة التركيز</option>
+              {CONCENTRATION_TYPES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <input
+              type="number"
+              placeholder="قيمة التركيز المطلوب"
+              value={targetConcentrationValue}
+              onChange={(e) => setTargetConcentrationValue(e.target.value)}
+              style={{ padding: '0.5rem', flex: '1 1 150px' }}
+            />
+          </>
         )}
 
         {showMolarMass && (
@@ -213,10 +229,10 @@ function ChemicalsPage() {
         {showStockPercent && (
           <input
             type="number"
-            placeholder="نسبة المخزون %"
+            placeholder="تركيز المحلول الأصلي (Stock) %"
             value={stockPercent}
             onChange={(e) => setStockPercent(e.target.value)}
-            style={{ padding: '0.5rem', flex: '1 1 150px' }}
+            style={{ padding: '0.5rem', flex: '1 1 180px' }}
           />
         )}
 
@@ -258,6 +274,7 @@ function ChemicalsPage() {
             >
               <span>
                 {chemical.name} — {chemical.amount} {chemical.unit} — {chemical.physical_state} — {chemical.experiments?.name}
+                {chemical.target_concentration_value ? ` — ${chemical.target_concentration_value} ${chemical.concentration_type}` : ''}
               </span>
               <span style={{ display: 'flex', gap: '0.5rem' }}>
                 <button onClick={() => handleEdit(chemical)}>تعديل</button>
