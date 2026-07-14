@@ -9,6 +9,8 @@ const SOURCE_TYPES = [
   { value: 'diluted_stock', label: 'Liquid stock - diluted (محلول مركز يتم تخفيفه)' },
   { value: 'concentrated_stock', label: 'Liquid stock - concentrated, as-is (محلول مركز يستخدم كما هو)' },
 ]
+const SOLID_UNITS = ['g', 'kg', 'mg']
+const LIQUID_UNITS = ['mL', 'L', 'g', 'kg', 'mg']
 
 function ChemicalsPage() {
   const [chemicals, setChemicals] = useState([])
@@ -30,8 +32,10 @@ function ChemicalsPage() {
 
   const isSolution = physicalState === 'Solution'
   const showMolarMass = isSolution && sourceType === 'solid_dissolved'
-  const showStockPercent = isSolution && sourceType === 'diluted_stock'
-  const showConcentrationFields = isSolution && (sourceType === 'solid_dissolved' || sourceType === 'diluted_stock')
+  const showStockPercent = isSolution && (sourceType === 'diluted_stock' || sourceType === 'concentrated_stock')
+  const showConcentrationFields = isSolution && sourceType === 'solid_dissolved' || isSolution && sourceType === 'diluted_stock'
+  const unitOptions = physicalState === 'Pure Solid' ? SOLID_UNITS : LIQUID_UNITS
+  const uniqueNames = [...new Set(chemicals.map((c) => c.name).filter(Boolean))]
 
   async function loadData() {
     setLoading(true)
@@ -52,6 +56,7 @@ function ChemicalsPage() {
 
   function handlePhysicalStateChange(value) {
     setPhysicalState(value)
+    setUnit('')
     if (value !== 'Solution') {
       setSourceType('')
       setConcentrationType('')
@@ -64,7 +69,7 @@ function ChemicalsPage() {
   function handleSourceTypeChange(value) {
     setSourceType(value)
     if (value !== 'solid_dissolved') setMolarMass('')
-    if (value !== 'diluted_stock') setStockPercent('')
+    if (value !== 'diluted_stock' && value !== 'concentrated_stock') setStockPercent('')
     if (value === 'concentrated_stock') {
       setConcentrationType('')
       setTargetConcentrationValue('')
@@ -167,8 +172,14 @@ function ChemicalsPage() {
           placeholder="اسم المادة"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          list="chemical-names-list"
           style={{ padding: '0.5rem', flex: '1 1 150px' }}
         />
+        <datalist id="chemical-names-list">
+          {uniqueNames.map((n) => (
+            <option key={n} value={n} />
+          ))}
+        </datalist>
         <select value={physicalState} onChange={(e) => handlePhysicalStateChange(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 140px' }}>
           {PHYSICAL_STATES.map((s) => (
             <option key={s} value={s}>{s}</option>
@@ -181,13 +192,12 @@ function ChemicalsPage() {
           onChange={(e) => setAmount(e.target.value)}
           style={{ padding: '0.5rem', flex: '1 1 100px' }}
         />
-        <input
-          type="text"
-          placeholder="الوحدة (g, mL...)"
-          value={unit}
-          onChange={(e) => setUnit(e.target.value)}
-          style={{ padding: '0.5rem', flex: '1 1 100px' }}
-        />
+        <select value={unit} onChange={(e) => setUnit(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 100px' }}>
+          <option value="">الوحدة</option>
+          {unitOptions.map((u) => (
+            <option key={u} value={u}>{u}</option>
+          ))}
+        </select>
 
         {isSolution && (
           <select value={sourceType} onChange={(e) => handleSourceTypeChange(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 260px' }}>
@@ -275,6 +285,7 @@ function ChemicalsPage() {
               <span>
                 {chemical.name} — {chemical.amount} {chemical.unit} — {chemical.physical_state} — {chemical.experiments?.name}
                 {chemical.target_concentration_value ? ` — ${chemical.target_concentration_value} ${chemical.concentration_type}` : ''}
+                {chemical.stock_percent ? ` — Stock: ${chemical.stock_percent}%` : ''}
               </span>
               <span style={{ display: 'flex', gap: '0.5rem' }}>
                 <button onClick={() => handleEdit(chemical)}>تعديل</button>
