@@ -2,6 +2,7 @@ import { useState } from 'react'
 import CoursesPage from './features/courses/CoursesPage'
 import TermsPage from './features/terms/TermsPage'
 import SectionsPage from './features/sections/SectionsPage'
+import ExperimentsPage from './features/experiments/ExperimentsPage'
 
 function App() {
   const [activeTab, setActiveTab] = useState('courses')
@@ -28,11 +29,15 @@ function App() {
         <button style={tabStyle('sections')} onClick={() => setActiveTab('sections')}>
           الشعب
         </button>
+        <button style={tabStyle('experiments')} onClick={() => setActiveTab('experiments')}>
+          التجارب
+        </button>
       </div>
 
       {activeTab === 'courses' && <CoursesPage />}
       {activeTab === 'terms' && <TermsPage />}
       {activeTab === 'sections' && <SectionsPage />}
+      {activeTab === 'experiments' && <ExperimentsPage />}
     </div>
   )
 }
