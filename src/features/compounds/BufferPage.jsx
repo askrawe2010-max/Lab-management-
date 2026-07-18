@@ -232,7 +232,21 @@ return (
       ) : groups.length === 0 ? (
         <p>لا توجد محاليل مركّبة مضافة بعد.</p>
       ) : (
-        <p>سيتم عرض القائمة هنا</p>
+        groups.map((group) => (
+          <div key={group.id} style={{ marginBottom: '1.5rem', padding: '1rem', border: '1px solid #ddd', borderRadius: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong>
+                {group.name} — {group.total_amount} {group.unit} — {group.experiments?.name}
+              </strong>
+              <span style={{ display: 'flex', gap: '0.5rem' }}>
+                <button onClick={() => handleEditGroup(group)}>تعديل</button>
+                <button onClick={() => handleDeleteGroup(group.id)}>حذف</button>
+                <button onClick={() => { resetComponentForm(); setActiveGroupId(group.id) }}>+ إضافة مكوّن</button>
+              </span>
+            </div>
+            {group.notes && <p style={{ color: '#666', margin: '0.3rem 0' }}>{group.notes}</p>}
+          </div>
+        ))
       )}
     </div>
   )
