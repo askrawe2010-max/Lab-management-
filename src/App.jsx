@@ -4,6 +4,7 @@ import TermsPage from './features/terms/TermsPage'
 import SectionsPage from './features/sections/SectionsPage'
 import ExperimentsPage from './features/experiments/ExperimentsPage'
 import ChemicalsPage from './features/chemicals/ChemicalsPage'
+import BufferPage from './features/compounds/BufferPage'
 
 function App() {
   const [activeTab, setActiveTab] = useState('courses')
@@ -36,6 +37,9 @@ function App() {
         <button style={tabStyle('chemicals')} onClick={() => setActiveTab('chemicals')}>
           المواد الكيميائية
         </button>
+        <button style={tabStyle('buffer')} onClick={() => setActiveTab('buffer')}>
+          المحاليل المركّبة
+        </button>
       </div>
 
       {activeTab === 'courses' && <CoursesPage />}
@@ -43,6 +47,7 @@ function App() {
       {activeTab === 'sections' && <SectionsPage />}
       {activeTab === 'experiments' && <ExperimentsPage />}
       {activeTab === 'chemicals' && <ChemicalsPage />}
+      {activeTab === 'buffer' && <BufferPage />}
     </div>
   )
 }
