@@ -19,7 +19,6 @@ function BufferPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  // فورم المجموعة (Buffer الأم)
   const [experimentId, setExperimentId] = useState('')
   const [groupName, setGroupName] = useState('')
   const [totalAmount, setTotalAmount] = useState('')
@@ -27,7 +26,6 @@ function BufferPage() {
   const [groupNotes, setGroupNotes] = useState('')
   const [editingGroupId, setEditingGroupId] = useState(null)
 
-  // فورم المكوّن (يظهر تحت مجموعة محددة)
   const [activeGroupId, setActiveGroupId] = useState(null)
   const [compName, setCompName] = useState('')
   const [compRole, setCompRole] = useState('')
@@ -77,113 +75,4 @@ function BufferPage() {
     setCompTargetValue('')
     setEditingComponentId(null)
   }
-
-  async function handleGroupSubmit(e) {
-    e.preventDefault()
-    if (!experimentId || !groupName.trim()) {
-      setError('الرجاء تعبئة التجربة واسم المحلول المركّب')
-      return
-    }
-    const payload = {
-      experiment_id: experimentId,
-      name: groupName,
-      group_type: 'buffer',
-      total_amount: totalAmount ? Number(totalAmount) : null,
-      unit: totalUnit,
-      notes: groupNotes,
-    }
-    try {
-      if (editingGroupId) {
-        await updateCompoundGroup(editingGroupId, payload)
-      } else {
-        await addCompoundGroup(payload)
-      }
-      resetGroupForm()
-      loadData()
-    } catch (err) {
-      setError('حدث خطأ أثناء حفظ المحلول')
-      console.error(err)
-    }
-  }
-
-  function handleEditGroup(group) {
-    setEditingGroupId(group.id)
-    setExperimentId(group.experiment_id)
-    setGroupName(group.name)
-    setTotalAmount(group.total_amount ?? '')
-    setTotalUnit(group.unit || '')
-    setGroupNotes(group.notes || '')
-    setError('')
-  }
-
-  async function handleDeleteGroup(id) {
-    const confirmed = window.confirm('هل أنت متأكد من حذف هذا المحلول المركّب وكل مكوّناته؟')
-    if (!confirmed) return
-    try {
-      await deleteCompoundGroup(id)
-      loadData()
-    } catch (err) {
-      setError('حدث خطأ أثناء الحذف')
-      console.error(err)
-    }
-  }
-
-  async function handleComponentSubmit(e) {
-    e.preventDefault()
-    if (!compName.trim()) {
-      setError('الرجاء تعبئة اسم المكوّن')
-      return
-    }
-    const payload = {
-      group_id: activeGroupId,
-      name: compName,
-      role: compRole,
-      amount: compAmount ? Number(compAmount) : null,
-      unit: compUnit,
-      concentration_type: compConcentrationType || null,
-      target_concentration_value: compTargetValue ? Number(compTargetValue) : null,
-    }
-    try {
-      if (editingComponentId) {
-        await updateComponent(editingComponentId, payload)
-      } else {
-        await addComponent(payload)
-      }
-      resetComponentForm()
-      loadData()
-    } catch (err) {
-      setError('حدث خطأ أثناء حفظ المكوّن')
-      console.error(err)
-    }
-  }
-
-  function handleEditComponent(groupId, component) {
-    setActiveGroupId(groupId)
-    setEditingComponentId(component.id)
-    setCompName(component.name)
-    setCompRole(component.role || '')
-    setCompAmount(component.amount ?? '')
-    setCompUnit(component.unit || '')
-    setCompConcentrationType(component.concentration_type || '')
-    setCompTargetValue(component.target_concentration_value ?? '')
-  }
-
-  async function handleDeleteComponent(id) {
-    const confirmed = window.confirm('هل أنت متأكد من حذف هذا المكوّن؟')
-    if (!confirmed) return
-    try {
-      await deleteComponent(id)
-      loadData()
-    } catch (err) {
-      setError('حدث خطأ أثناء الحذف')
-      console.error(err)
-    }
-  }
-
-  return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '950px' }}>
-      <h1>Chem Lab Calc</h1>
-      <h2>المحاليل المركّبة (Buffer / Mixed Solutions)</h2>
-
-      {/* فورم المجموعة الأم */}
-      <form onSubmit={handleGroupSubmit} style={{
+}
