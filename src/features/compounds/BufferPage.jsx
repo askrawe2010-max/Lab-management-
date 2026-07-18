@@ -226,6 +226,14 @@ return (
       </form>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {loading ? (
+        <p>جاري التحميل...</p>
+      ) : groups.length === 0 ? (
+        <p>لا توجد محاليل مركّبة مضافة بعد.</p>
+      ) : (
+        <p>سيتم عرض القائمة هنا</p>
+      )}
     </div>
   )
 }
