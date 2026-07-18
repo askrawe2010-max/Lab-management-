@@ -245,6 +245,56 @@ return (
               </span>
             </div>
             {group.notes && <p style={{ color: '#666', margin: '0.3rem 0' }}>{group.notes}</p>}
+            {activeGroupId === group.id && (
+              <form onSubmit={handleComponentSubmit} style={{ marginTop: '0.8rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0.8rem', background: '#f7f7f7', borderRadius: '6px' }}>
+                <input
+                  type="text"
+                  placeholder="اسم المكوّن"
+                  value={compName}
+                  onChange={(e) => setCompName(e.target.value)}
+                  style={{ padding: '0.5rem', flex: '1 1 150px' }}
+                />
+                <input
+                  type="text"
+                  placeholder="الدور (Acid, Base...)"
+                  value={compRole}
+                  onChange={(e) => setCompRole(e.target.value)}
+                  style={{ padding: '0.5rem', flex: '1 1 130px' }}
+                />
+                <input
+                  type="number"
+                  placeholder="الكمية"
+                  value={compAmount}
+                  onChange={(e) => setCompAmount(e.target.value)}
+                  style={{ padding: '0.5rem', flex: '1 1 100px' }}
+                />
+                <select value={compUnit} onChange={(e) => setCompUnit(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 90px' }}>
+                  <option value="">الوحدة</option>
+                  {UNITS.map((u) => (
+                    <option key={u} value={u}>{u}</option>
+                  ))}
+                </select>
+                <select value={compConcentrationType} onChange={(e) => setCompConcentrationType(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 120px' }}>
+                  <option value="">نوع التركيز (اختياري)</option>
+                  {CONCENTRATION_TYPES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  placeholder="قيمة التركيز"
+                  value={compTargetValue}
+                  onChange={(e) => setCompTargetValue(e.target.value)}
+                  style={{ padding: '0.5rem', flex: '1 1 120px' }}
+                />
+                <button type="submit" style={{ padding: '0.5rem 1rem' }}>
+                  {editingComponentId ? 'حفظ تعديل المكوّن' : 'إضافة'}
+                </button>
+                <button type="button" onClick={resetComponentForm} style={{ padding: '0.5rem 1rem' }}>
+                  إلغاء
+                </button>
+              </form>
+            )}
           </div>
         ))
       )}
