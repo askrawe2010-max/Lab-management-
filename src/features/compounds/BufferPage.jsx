@@ -29,7 +29,7 @@ function BufferPage() {
   const [activeGroupId, setActiveGroupId] = useState(null)
   const [compName, setCompName] = useState('')
   const [compRole, setCompRole] = useState('')
-  const [compAmount, setCompAmount] = useState('')
+const [compAmount, setCompAmount] = useState('')
   const [compUnit, setCompUnit] = useState('')
   const [compConcentrationType, setCompConcentrationType] = useState('')
   const [compTargetValue, setCompTargetValue] = useState('')
@@ -54,8 +54,7 @@ function BufferPage() {
   useEffect(() => {
     loadData()
   }, [])
-
-  function resetGroupForm() {
+function resetGroupForm() {
     setExperimentId('')
     setGroupName('')
     setTotalAmount('')
@@ -124,8 +123,7 @@ async function handleGroupSubmit(e) {
       console.error(err)
     }
   }
-
-  async function handleComponentSubmit(e) {
+async function handleComponentSubmit(e) {
     e.preventDefault()
     if (!compName.trim()) {
       setError('الرجاء تعبئة اسم المكوّن')
@@ -133,7 +131,11 @@ async function handleGroupSubmit(e) {
     }
     const payload = {
       group_id: activeGroupId,
-    concentration_type: compConcentrationType || null,
+      name: compName,
+      role: compRole,
+      amount: compAmount ? Number(compAmount) : null,
+      unit: compUnit,
+      concentration_type: compConcentrationType || null,
       target_concentration_value: compTargetValue ? Number(compTargetValue) : null,
     }
     try {
@@ -172,4 +174,60 @@ async function handleGroupSubmit(e) {
       console.error(err)
     }
   }
-}  
+return (
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '950px' }}>
+      <h1>Chem Lab Calc</h1>
+      <h2>المحاليل المركّبة (Buffer / Mixed Solutions)</h2>
+
+      <form onSubmit={handleGroupSubmit} style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '1rem', border: '1px solid #ccc', borderRadius: '6px' }}>
+        <select value={experimentId} onChange={(e) => setExperimentId(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 200px' }}>
+          <option value="">اختر التجربة</option>
+          {experiments.map((exp) => (
+            <option key={exp.id} value={exp.id}>
+              {exp.name} — {exp.courses?.name}
+            </option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="اسم المحلول المركّب"
+          value={groupName}
+          onChange={(e) => setGroupName(e.target.value)}
+          style={{ padding: '0.5rem', flex: '1 1 220px' }}
+        />
+        <input
+          type="number"
+          placeholder="الكمية الكلية"
+          value={totalAmount}
+          onChange={(e) => setTotalAmount(e.target.value)}
+          style={{ padding: '0.5rem', flex: '1 1 120px' }}
+        />
+        <select value={totalUnit} onChange={(e) => setTotalUnit(e.target.value)} style={{ padding: '0.5rem', flex: '1 1 100px' }}>
+          <option value="">الوحدة</option>
+          {UNITS.map((u) => (
+            <option key={u} value={u}>{u}</option>
+          ))}
+        </select>
+        <input
+          type="text"
+          placeholder="ملاحظات (اختياري)"
+          value={groupNotes}
+          onChange={(e) => setGroupNotes(e.target.value)}
+          style={{ padding: '0.5rem', flex: '1 1 200px' }}
+        />
+        <button type="submit" style={{ padding: '0.5rem 1rem' }}>
+          {editingGroupId ? 'حفظ التعديل' : 'إضافة محلول مركّب'}
+        </button>
+        {editingGroupId && (
+          <button type="button" onClick={resetGroupForm} style={{ padding: '0.5rem 1rem' }}>
+            إلغاء
+          </button>
+        )}
+      </form>
+
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </div>
+  )
+}
+
+export default BufferPage
